@@ -1,0 +1,130 @@
+[gd_scene load_steps=14 format=3 uid="uid://c0rfxy6toppml"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_temxs"]
+[ext_resource type="PackedScene" uid="uid://8b268vewh84" path="res://bullet.tscn" id="2_5pv5m"]
+[ext_resource type="PackedScene" uid="uid://bupoxmvqg6dlc" path="res://enemy.tscn" id="3_62bvi"]
+[ext_resource type="PackedScene" uid="uid://bt2ebtn2l7vjn" path="res://person.tscn" id="5_6bfa0"]
+[ext_resource type="Texture2D" uid="uid://bfqnw64hn3m8v" path="res://light.png" id="7_ceqqv"]
+[ext_resource type="TileSet" uid="uid://p4tsbptrul4q" path="res://tile_set.tres" id="8_7qdrk"]
+[ext_resource type="Texture2D" uid="uid://y1tasqoy8alg" path="res://square.svg" id="8_ia43j"]
+[ext_resource type="Texture2D" uid="uid://dp6xk5wj1vcpm" path="res://circle.png" id="8_mlny7"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_hui86"]
+vertices = PackedVector2Array(2445.94, 1490.91, -1885.11, 1399.08, -1982.87, -1786.1, 2404.05, -1897.89)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(2450, 1495, -1889, 1403, -1987, -1790, 2408, -1902)])
+parsed_geometry_type = 1
+agent_radius = 7.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_knfff"]
+light_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_8w245"]
+light_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_qv7lb"]
+light_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bgbca"]
+size = Vector2(98, 20)
+
+[node name="Main" type="CanvasModulate"]
+color = Color(0, 0, 0, 1)
+script = ExtResource("1_temxs")
+bullet_scene = ExtResource("2_5pv5m")
+enemy_scene = ExtResource("3_62bvi")
+
+[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+unique_name_in_owner = true
+navigation_polygon = SubResource("NavigationPolygon_hui86")
+
+[node name="UnrevealedTileMap" type="TileMap" parent="NavigationRegion"]
+unique_name_in_owner = true
+tile_set = ExtResource("8_7qdrk")
+format = 2
+
+[node name="RevealedTileMap" type="TileMap" parent="NavigationRegion"]
+unique_name_in_owner = true
+light_mask = 2
+tile_set = ExtResource("8_7qdrk")
+format = 2
+
+[node name="Enemies" type="Node2D" parent="NavigationRegion"]
+unique_name_in_owner = true
+
+[node name="DebugPoint" type="Sprite2D" parent="NavigationRegion"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(0, 1, 0, 1)
+material = SubResource("CanvasItemMaterial_knfff")
+scale = Vector2(0.0157027, 0.0157027)
+texture = ExtResource("8_mlny7")
+
+[node name="Player" parent="NavigationRegion" instance=ExtResource("5_6bfa0")]
+unique_name_in_owner = true
+light_mask = 4
+
+[node name="Body" parent="NavigationRegion/Player" index="1"]
+modulate = Color(0, 0, 1, 1)
+material = SubResource("CanvasItemMaterial_8w245")
+
+[node name="Gun" parent="NavigationRegion/Player" index="2"]
+modulate = Color(0, 0, 1, 1)
+material = SubResource("CanvasItemMaterial_8w245")
+
+[node name="Head" parent="NavigationRegion/Player" index="3"]
+modulate = Color(0, 0, 1, 1)
+material = SubResource("CanvasItemMaterial_8w245")
+
+[node name="FovLight" type="PointLight2D" parent="NavigationRegion/Player"]
+unique_name_in_owner = true
+blend_mode = 2
+range_item_cull_mask = 3
+shadow_enabled = true
+texture = ExtResource("7_ceqqv")
+
+[node name="GlobalLight" type="PointLight2D" parent="NavigationRegion/Player"]
+unique_name_in_owner = true
+visible = false
+color = Color(1, 0.678431, 0.67451, 1)
+blend_mode = 2
+texture = ExtResource("8_mlny7")
+texture_scale = 20.0
+
+[node name="RevealLight" type="PointLight2D" parent="NavigationRegion/Player"]
+unique_name_in_owner = true
+energy = 0.5
+range_item_cull_mask = 2
+texture = ExtResource("8_mlny7")
+texture_scale = 20.0
+
+[node name="Camera2D" type="Camera2D" parent="NavigationRegion/Player"]
+zoom = Vector2(0.4, 0.4)
+
+[node name="EditorLight" type="PointLight2D" parent="NavigationRegion/Player"]
+material = SubResource("CanvasItemMaterial_qv7lb")
+editor_only = true
+energy = 0.5
+shadow_item_cull_mask = 0
+texture = ExtResource("8_mlny7")
+texture_scale = 20.0
+
+[node name="Laser" type="Node2D" parent="NavigationRegion/Player"]
+unique_name_in_owner = true
+
+[node name="Sprite2D" type="Sprite2D" parent="NavigationRegion/Player/Laser"]
+modulate = Color(0, 0.662745, 0, 0.239216)
+position = Vector2(54, 0)
+scale = Vector2(0.88, 0.025)
+texture = ExtResource("8_ia43j")
+
+[node name="DebugBox" type="CollisionShape2D" parent="NavigationRegion/Player"]
+visible = false
+position = Vector2(49, 0)
+shape = SubResource("RectangleShape2D_bgbca")
+disabled = true
+
+[node name="Bullets" type="Node2D" parent="NavigationRegion"]
+unique_name_in_owner = true
+
+[editable path="NavigationRegion/Player"]

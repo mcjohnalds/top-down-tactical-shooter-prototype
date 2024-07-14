@@ -1,0 +1,32 @@
+[gd_resource type="TileSet" load_steps=5 format=3 uid="uid://p4tsbptrul4q"]
+
+[ext_resource type="Texture2D" uid="uid://c5w7d6d461r1w" path="res://tile_set.webp" id="1_pmvpc"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_cbvh7"]
+vertices = PackedVector2Array(8, 8, -8, 8, -8, -8, 8, -8)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)])
+agent_radius = 0.0
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_27328"]
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_8nkm2"]
+texture = ExtResource("1_pmvpc")
+0:0/next_alternative_id = 3
+0:0/0 = 0
+0:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_cbvh7")
+0:0/2 = 2
+1:0/next_alternative_id = 3
+1:0/0 = 0
+1:0/0/occlusion_layer_0/polygon = SubResource("OccluderPolygon2D_27328")
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
+1:0/2 = 2
+
+[resource]
+uv_clipping = true
+occlusion_layer_0/light_mask = 1
+occlusion_layer_1/light_mask = 3
+physics_layer_0/collision_layer = 1
+navigation_layer_0/layers = 1
+sources/2 = SubResource("TileSetAtlasSource_8nkm2")

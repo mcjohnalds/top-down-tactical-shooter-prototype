@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://8b268vewh84"]
+
+[ext_resource type="Texture2D" uid="uid://y1tasqoy8alg" path="res://square.svg" id="1_bi57v"]
+[ext_resource type="Script" path="res://bullet.gd" id="1_hq4ud"]
+
+[node name="Bullet" type="Node2D"]
+script = ExtResource("1_hq4ud")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 0.764384, 0.259847, 1)
+position = Vector2(10, 0)
+scale = Vector2(0.201, 0.03)
+texture = ExtResource("1_bi57v")

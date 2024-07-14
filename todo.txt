@@ -1,0 +1,17 @@
+Flashbangs
+
+Enemy alive counter
+
+High score counter
+
+Proper graphics
+
+Start screen
+
+End screen
+
+Blood
+
+Particle effects
+
+Textures

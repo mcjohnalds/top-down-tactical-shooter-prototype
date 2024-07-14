@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://bupoxmvqg6dlc"]
+
+[ext_resource type="PackedScene" uid="uid://bt2ebtn2l7vjn" path="res://person.tscn" id="1_n47cs"]
+[ext_resource type="Script" path="res://enemy.gd" id="1_vo326"]
+[ext_resource type="PackedScene" uid="uid://b28e5osycsvh5" path="res://debug_arrow.tscn" id="4_0xbhh"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ip7iq"]
+light_mode = 2
+
+[node name="Enemy" instance=ExtResource("1_n47cs")]
+script = ExtResource("1_vo326")
+
+[node name="CollisionShape" parent="." index="0"]
+unique_name_in_owner = true
+
+[node name="Body" parent="." index="1"]
+modulate = Color(1, 0, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
+
+[node name="Gun" parent="." index="2"]
+modulate = Color(1, 0, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
+
+[node name="NavigationAgent" type="NavigationAgent2D" parent="." index="3"]
+unique_name_in_owner = true
+
+[node name="DebugArrow" parent="." index="4" instance=ExtResource("4_0xbhh")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Head" parent="." index="5"]
+modulate = Color(1, 0, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
