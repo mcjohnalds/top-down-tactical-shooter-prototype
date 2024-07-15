@@ -1,17 +1,39 @@
-Flashbangs
-
-Enemy alive counter
-
-High score counter
-
-Proper graphics
-
-Start screen
-
-End screen
-
-Blood
-
-Particle effects
-
-Textures
+- Research CQB
+- Enemy alive counter
+- Use terrain map to make walls thinner
+- Doors
+- Supressing fire
+- Experiment with differnet enemy AIs
+  - AI knowledge of player
+  - Seeing player's gun peeking around corner
+  - Hide in hard corner
+  - Rush player
+- Ammo
+- HP
+- Hard vs light cover
+- Prototype teammate
+- Better proc gen
+- Automatically swish shoulders
+- Flashbangs
+- Blood
+- Particle effects
+- More textures
+- Sound
+- High score counter
+- Fix texture flickering
+- Start screen
+- End screen
+- Settings
+- Multiple levels
+- Simplify AI logic
+- Clean up code and project files
+- Preload shaders
+- FOMO?
+- Curiosity?
+- Creativity?
+- Progression?
+- Mastery?
+- Autonomy?
+- Habit?
+- Move dungeon generation into godot-temple
+- Make godot-temple a loosely coupled addon

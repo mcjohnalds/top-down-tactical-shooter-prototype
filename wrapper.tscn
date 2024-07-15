@@ -1,0 +1,57 @@
+[gd_scene load_steps=4 format=3 uid="uid://d248nii84gnh8"]
+
+[ext_resource type="PackedScene" uid="uid://c0rfxy6toppml" path="res://main.tscn" id="1_qpe7y"]
+[ext_resource type="Shader" path="res://crt.gdshader" id="2_h6k5k"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_katds"]
+shader = ExtResource("2_h6k5k")
+shader_parameter/resolution = Vector2(640, 360)
+shader_parameter/scan_line_amount = 0.286
+shader_parameter/warp_amount = 0.1
+shader_parameter/noise_amount = 0.01
+shader_parameter/interference_amount = 0.1
+shader_parameter/grille_amount = 0.047
+shader_parameter/grille_size = 1.0
+shader_parameter/vignette_amount = 0.6
+shader_parameter/vignette_intensity = 0.4
+shader_parameter/aberation_amount = 0.05
+shader_parameter/roll_line_amount = 0.003
+shader_parameter/roll_speed = 1.0
+shader_parameter/scan_line_strength = -8.0
+shader_parameter/pixel_strength = -2.0
+
+[node name="Tmp" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 5
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(230, 129)
+render_target_update_mode = 4
+
+[node name="Main" parent="SubViewportContainer/SubViewport" instance=ExtResource("1_qpe7y")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CRTShader" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_katds")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

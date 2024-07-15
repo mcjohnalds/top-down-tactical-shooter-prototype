@@ -82,7 +82,6 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_player_movement(delta: float) -> void:
-	get_viewport().get_camera_2d().force_update_scroll()
 	var input_dir := Input.get_vector("left", "right", "up", "down")
 	var a := 25.0 if input_dir.is_zero_approx() else 14.0
 	player.velocity = player.velocity.lerp(input_dir * 100.0, delta * a)
@@ -215,6 +214,7 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 					player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
 					player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
 					player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
+					fov_light.visible = false
 					laser.visible = false
 					global_light.visible = true
 					revealed_tile_map.visible = false
