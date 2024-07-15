@@ -1,4 +1,4 @@
-extends Node2D
+extends Control
 class_name Main
 
 const fire_rate = 0.1
@@ -25,6 +25,7 @@ const laser_length := 100.0
 @onready var fov_light: Light2D = %FovLight
 @onready var grenades_node: Node2D = %Grenades
 @onready var flashbang_lights_node: Node2D = %FlashbangLights
+@onready var root_2d: Node2D = %Root2D
 var player_last_fired_at := -1000.0
 var player_alive := true
 
@@ -96,7 +97,7 @@ func _update_player_movement(delta: float) -> void:
 	player.velocity = player.velocity.lerp(input_dir * 100.0, delta * a)
 	player.move_and_slide()
 	player.rotation = player.global_position.angle_to_point(
-		get_global_mouse_position()
+		root_2d.get_global_mouse_position()
 	)
 
 
@@ -110,7 +111,9 @@ func _update_player_shooting() -> void:
 		var query = PhysicsRayQueryParameters2D.new()
 		query.from = player.global_position
 		query.to = player.global_position + player.global_transform.x * 1000.0
-		var collision = get_world_2d().direct_space_state.intersect_ray(query)
+		var collision = (
+			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+		)
 		var bullet := bullet_scene.instantiate()
 		bullet.start = query.from
 		if collision:
@@ -148,7 +151,9 @@ func _update_player_tile_reveal() -> void:
 		query.from = player.global_position
 		var dir := Vector2.from_angle(player.global_rotation + angle)
 		query.to = player.global_position + dir * visibility_distance
-		var collision := get_world_2d().direct_space_state.intersect_ray(query)
+		var collision := (
+			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+		)
 		var point: Vector2 = (
 			collision.position
 				if collision and collision.collider == unrevealed_tile_map
@@ -178,7 +183,9 @@ func _update_player_laser() -> void:
 			player.global_position
 			+ player.global_transform.x * visibility_distance
 		)
-		var collision = get_world_2d().direct_space_state.intersect_ray(query)
+		var collision = (
+			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+		)
 		if collision:
 			laser.scale.x = collision.position.distance_to(query.from) / 100.0
 		else:
@@ -217,7 +224,7 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 			query.from = enemy.global_position
 			query.to = player_pos
 			var collision = (
-				get_world_2d().direct_space_state.intersect_ray(query)
+				root_2d.get_world_2d().direct_space_state.intersect_ray(query)
 			)
 			var bullet := bullet_scene.instantiate()
 			bullet.start = query.from
@@ -290,7 +297,7 @@ func _update_flashbang_grenade(fg: FlashbangGrenade, delta: float) -> void:
 			query.to = query.from + dir * fg.radius
 			query.exclude = [fg]
 			var collision := (
-				get_world_2d().direct_space_state.intersect_ray(query)
+				root_2d.get_world_2d().direct_space_state.intersect_ray(query)
 			)
 			if collision and collision.collider == enemy:
 				enemy.daze_time_remaining = enemy.daze_time
@@ -302,7 +309,7 @@ func _update_flashbang_light(lg: FlashbangLight, delta: float) -> void:
 		lg.queue_free()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("quit"):
 		get_tree().quit()
 	if event.is_action_pressed("restart"):
@@ -312,7 +319,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		g.add_collision_exception_with(player)
 		g.position = player.global_position
 		g.linear_velocity = (
-			4.0 * (get_global_mouse_position() - player.global_position)
+			4.0
+			* (root_2d.get_global_mouse_position() - player.global_position)
 		)
 		g.angular_velocity = 6.0
 		grenades_node.add_child(g)
@@ -333,7 +341,9 @@ func enemy_see_player_ray_cast(
 		var d := 1.0 - 2.0 * float(i) / float(samples - 1)
 		var v := (p2 + o * r * d) - p1
 		query.to = p1 + v.limit_length(distance)
-		var collision := get_world_2d().direct_space_state.intersect_ray(query)
+		var collision := (
+			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+		)
 		if collision and collision.collider == player:
 			see_player_positions.append(query.to)
 	if not see_player_positions.is_empty():

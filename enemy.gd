@@ -3,7 +3,7 @@ class_name Enemy
 
 enum State { IDLE, ALERT, MOVING }
 const reaction_time := 0.8
-const daze_time := 2.0
+const daze_time := 3.0
 @onready var body: Sprite2D = $Body
 @onready var head: Sprite2D = $Head
 @onready var gun: Sprite2D = %Gun

@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://c0rfxy6toppml"]
+[gd_scene load_steps=19 format=3 uid="uid://3xjxvtk5sjny"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_temxs"]
 [ext_resource type="PackedScene" uid="uid://8b268vewh84" path="res://bullet.tscn" id="2_5pv5m"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://y1tasqoy8alg" path="res://square.svg" id="8_ia43j"]
 [ext_resource type="Texture2D" uid="uid://dp6xk5wj1vcpm" path="res://circle.png" id="8_mlny7"]
 [ext_resource type="Texture2D" uid="uid://dkug7h4q2fq71" path="res://white.tres" id="8_nc86i"]
+[ext_resource type="Shader" path="res://crt.gdshader" id="12_75d68"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_knfff"]
 light_mode = 1
@@ -31,15 +32,57 @@ size = Vector2(98, 20)
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_qv7lb"]
 light_mode = 1
 
-[node name="Main" type="CanvasModulate"]
-color = Color(0, 0, 0, 1)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_katds"]
+shader = ExtResource("12_75d68")
+shader_parameter/resolution = Vector2(640, 360)
+shader_parameter/scan_line_amount = 0.286
+shader_parameter/warp_amount = 0.1
+shader_parameter/noise_amount = 0.01
+shader_parameter/interference_amount = 0.1
+shader_parameter/grille_amount = 0.047
+shader_parameter/grille_size = 1.0
+shader_parameter/vignette_amount = 0.6
+shader_parameter/vignette_intensity = 0.4
+shader_parameter/aberation_amount = 0.05
+shader_parameter/roll_line_amount = 0.003
+shader_parameter/roll_speed = 1.0
+shader_parameter/scan_line_strength = -8.0
+shader_parameter/pixel_strength = -2.0
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_temxs")
 bullet_scene = ExtResource("2_5pv5m")
 enemy_scene = ExtResource("3_62bvi")
 flashbang_grenade_scene = ExtResource("4_xo5y4")
 flashbang_light_scene = ExtResource("5_44epk")
 
-[node name="DebugPoint" type="Sprite2D" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 5
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+canvas_item_default_texture_filter = 0
+size = Vector2i(230, 129)
+render_target_update_mode = 4
+
+[node name="Root2D" type="CanvasModulate" parent="SubViewportContainer/SubViewport"]
+unique_name_in_owner = true
+color = Color(0, 0, 0, 1)
+
+[node name="DebugPoint" type="Sprite2D" parent="SubViewportContainer/SubViewport/Root2D"]
 unique_name_in_owner = true
 visible = false
 modulate = Color(0, 1, 0, 1)
@@ -47,41 +90,41 @@ material = SubResource("CanvasItemMaterial_knfff")
 scale = Vector2(0.0157027, 0.0157027)
 texture = ExtResource("8_mlny7")
 
-[node name="NavigationRegion" type="NavigationRegion2D" parent="."]
+[node name="NavigationRegion" type="NavigationRegion2D" parent="SubViewportContainer/SubViewport/Root2D"]
 unique_name_in_owner = true
 navigation_polygon = SubResource("NavigationPolygon_hui86")
 
-[node name="UnrevealedTileMap" type="TileMap" parent="NavigationRegion"]
+[node name="UnrevealedTileMap" type="TileMap" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 tile_set = ExtResource("8_7qdrk")
 format = 2
 
-[node name="RevealedTileMap" type="TileMap" parent="NavigationRegion"]
+[node name="RevealedTileMap" type="TileMap" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 light_mask = 2
 tile_set = ExtResource("8_7qdrk")
 format = 2
 
-[node name="Enemies" type="Node2D" parent="NavigationRegion"]
+[node name="Enemies" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 
-[node name="Player" parent="NavigationRegion" instance=ExtResource("5_6bfa0")]
+[node name="Player" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion" instance=ExtResource("5_6bfa0")]
 unique_name_in_owner = true
 light_mask = 4
 
-[node name="Body" parent="NavigationRegion/Player" index="1"]
+[node name="Body" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player" index="1"]
 modulate = Color(0, 0, 1, 1)
 material = SubResource("CanvasItemMaterial_8w245")
 
-[node name="Gun" parent="NavigationRegion/Player" index="2"]
+[node name="Gun" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player" index="2"]
 modulate = Color(0, 0, 1, 1)
 material = SubResource("CanvasItemMaterial_8w245")
 
-[node name="Head" parent="NavigationRegion/Player" index="3"]
+[node name="Head" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player" index="3"]
 modulate = Color(0, 0, 1, 1)
 material = SubResource("CanvasItemMaterial_8w245")
 
-[node name="FovLight" type="PointLight2D" parent="NavigationRegion/Player"]
+[node name="FovLight" type="PointLight2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]
 unique_name_in_owner = true
 energy = 0.8
 blend_mode = 2
@@ -89,35 +132,35 @@ range_item_cull_mask = 3
 shadow_enabled = true
 texture = ExtResource("7_ceqqv")
 
-[node name="Laser" type="Node2D" parent="NavigationRegion/Player"]
+[node name="Laser" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]
 unique_name_in_owner = true
 
-[node name="Sprite2D" type="Sprite2D" parent="NavigationRegion/Player/Laser"]
+[node name="Sprite2D" type="Sprite2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player/Laser"]
 modulate = Color(0, 0.662745, 0, 0.239216)
 position = Vector2(54, 0)
 scale = Vector2(0.88, 0.025)
 texture = ExtResource("8_ia43j")
 
-[node name="DebugBox" type="CollisionShape2D" parent="NavigationRegion/Player"]
+[node name="DebugBox" type="CollisionShape2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]
 visible = false
 position = Vector2(49, 0)
 shape = SubResource("RectangleShape2D_bgbca")
 disabled = true
 
-[node name="Camera2D" type="Camera2D" parent="NavigationRegion/Player"]
+[node name="Camera2D" type="Camera2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]
 zoom = Vector2(0.65, 0.65)
 process_callback = 0
 
-[node name="Bullets" type="Node2D" parent="NavigationRegion"]
+[node name="Bullets" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 
-[node name="Grenades" type="Node2D" parent="NavigationRegion"]
+[node name="Grenades" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 
-[node name="FlashbangLights" type="Node2D" parent="NavigationRegion"]
+[node name="FlashbangLights" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 
-[node name="GlobalLight" type="PointLight2D" parent="."]
+[node name="GlobalLight" type="PointLight2D" parent="SubViewportContainer/SubViewport/Root2D"]
 unique_name_in_owner = true
 visible = false
 scale = Vector2(100, 100)
@@ -126,7 +169,7 @@ blend_mode = 2
 texture = ExtResource("8_nc86i")
 texture_scale = 50.0
 
-[node name="EditorLight" type="PointLight2D" parent="."]
+[node name="EditorLight" type="PointLight2D" parent="SubViewportContainer/SubViewport/Root2D"]
 material = SubResource("CanvasItemMaterial_qv7lb")
 scale = Vector2(100, 100)
 editor_only = true
@@ -135,7 +178,7 @@ shadow_item_cull_mask = 0
 texture = ExtResource("8_nc86i")
 texture_scale = 50.0
 
-[node name="RevealLight" type="PointLight2D" parent="."]
+[node name="RevealLight" type="PointLight2D" parent="SubViewportContainer/SubViewport/Root2D"]
 unique_name_in_owner = true
 scale = Vector2(100, 100)
 energy = 0.5
@@ -143,4 +186,14 @@ range_item_cull_mask = 2
 texture = ExtResource("8_nc86i")
 texture_scale = 50.0
 
-[editable path="NavigationRegion/Player"]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CRTShader" type="ColorRect" parent="CanvasLayer"]
+material = SubResource("ShaderMaterial_katds")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[editable path="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]

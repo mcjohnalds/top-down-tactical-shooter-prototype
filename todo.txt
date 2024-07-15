@@ -1,6 +1,9 @@
 - Flashbangs
   - limited quantity
   - Pick up bangs from enemies
+- Experiment:
+  - Make enemy and player visibility based on screen size rather than distance
+  - Allow zooming out and make view distance longer
 - Research CQB
 - Enemy alive counter
 - Use terrain map to make walls thinner
