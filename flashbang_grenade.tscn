@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3 uid="uid://b46rf72hrbmku"]
+
+[ext_resource type="Texture2D" uid="uid://dkug7h4q2fq71" path="res://white.tres" id="1_0q5cj"]
+[ext_resource type="Script" path="res://flashbang_grenade.gd" id="1_7vwed"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_methr"]
+friction = 0.0
+bounce = 1.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_6hlem"]
+radius = 1.0
+
+[node name="FlashbangGrenade" type="RigidBody2D"]
+physics_material_override = SubResource("PhysicsMaterial_methr")
+gravity_scale = 1.66533e-16
+linear_damp_mode = 1
+angular_damp_mode = 1
+angular_damp = 1.0
+script = ExtResource("1_7vwed")
+
+[node name="Sprite" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Sprite"]
+modulate = Color(0.779777, 0.704514, 0.477137, 1)
+light_mask = 3
+position = Vector2(-5.96046e-08, 0.5)
+scale = Vector2(4, 7)
+texture = ExtResource("1_0q5cj")
+
+[node name="Sprite2D2" type="Sprite2D" parent="Sprite"]
+modulate = Color(0.23, 0.207575, 0.1403, 1)
+light_mask = 3
+position = Vector2(-2.38419e-07, -3.5)
+scale = Vector2(4, 1)
+texture = ExtResource("1_0q5cj")
+
+[node name="Sprite2D3" type="Sprite2D" parent="Sprite"]
+modulate = Color(0.23, 0.207575, 0.1403, 1)
+light_mask = 3
+position = Vector2(-2.5, -2)
+scale = Vector2(1, 4)
+texture = ExtResource("1_0q5cj")
+
+[node name="CollisionShape" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("CircleShape2D_6hlem")

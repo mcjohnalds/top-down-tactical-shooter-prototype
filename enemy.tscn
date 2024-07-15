@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://bupoxmvqg6dlc"]
+[gd_scene load_steps=6 format=3 uid="uid://bupoxmvqg6dlc"]
 
 [ext_resource type="PackedScene" uid="uid://bt2ebtn2l7vjn" path="res://person.tscn" id="1_n47cs"]
 [ext_resource type="Script" path="res://enemy.gd" id="1_vo326"]
 [ext_resource type="PackedScene" uid="uid://b28e5osycsvh5" path="res://debug_arrow.tscn" id="4_0xbhh"]
+[ext_resource type="Texture2D" uid="uid://2wuny0jpqpsa" path="res://star.webp" id="4_wbqtc"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_ip7iq"]
 light_mode = 2
@@ -31,3 +32,31 @@ visible = false
 [node name="Head" parent="." index="5"]
 modulate = Color(1, 0, 0, 1)
 material = SubResource("CanvasItemMaterial_ip7iq")
+
+[node name="DazeStars" type="Node2D" parent="." index="6"]
+unique_name_in_owner = true
+visible = false
+scale = Vector2(1.61916, 1.61916)
+
+[node name="Sprite2D1" type="Sprite2D" parent="DazeStars" index="0"]
+modulate = Color(1, 1, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
+position = Vector2(0, -3)
+scale = Vector2(0.0365903, 0.0344081)
+texture = ExtResource("4_wbqtc")
+
+[node name="Sprite2D2" type="Sprite2D" parent="DazeStars" index="1"]
+modulate = Color(1, 1, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
+position = Vector2(2.59808, 1.5)
+rotation = 2.0944
+scale = Vector2(0.0365903, 0.0344081)
+texture = ExtResource("4_wbqtc")
+
+[node name="Sprite2D3" type="Sprite2D" parent="DazeStars" index="2"]
+modulate = Color(1, 1, 0, 1)
+material = SubResource("CanvasItemMaterial_ip7iq")
+position = Vector2(-2.59808, 1.5)
+rotation = -2.09439
+scale = Vector2(0.0365903, 0.0344081)
+texture = ExtResource("4_wbqtc")

@@ -7,6 +7,8 @@ const player_field_of_view := deg_to_rad(120.0)
 const laser_length := 100.0
 @export var bullet_scene: PackedScene
 @export var enemy_scene: PackedScene
+@export var flashbang_grenade_scene: PackedScene
+@export var flashbang_light_scene: PackedScene
 @onready var player: CharacterBody2D = %Player
 @onready var player_circle: CircleShape2D = %Player/CollisionShape.shape
 @onready var player_body: Sprite2D = %Player/Body
@@ -21,6 +23,8 @@ const laser_length := 100.0
 @onready var navigation_region: NavigationRegion2D = %NavigationRegion
 @onready var laser: Node2D = %Laser
 @onready var fov_light: Light2D = %FovLight
+@onready var grenades_node: Node2D = %Grenades
+@onready var flashbang_lights_node: Node2D = %FlashbangLights
 var player_last_fired_at := -1000.0
 var player_alive := true
 
@@ -72,13 +76,18 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if player_alive:
-		_update_player_movement(delta)
-		_update_player_shooting()
-		_update_player_tile_reveal()
-		_update_player_laser()
+	if not player_alive:
+		return
+	_update_player_movement(delta)
+	_update_player_shooting()
+	_update_player_tile_reveal()
+	_update_player_laser()
 	for enemy: Enemy in enemies_node.get_children():
 		_update_enemy(enemy, delta)
+	for g: FlashbangGrenade in grenades_node.get_children():
+		_update_flashbang_grenade(g, delta)
+	for fl: FlashbangLight in flashbang_lights_node.get_children():
+		_update_flashbang_light(fl, delta)
 
 
 func _update_player_movement(delta: float) -> void:
@@ -86,12 +95,8 @@ func _update_player_movement(delta: float) -> void:
 	var a := 25.0 if input_dir.is_zero_approx() else 14.0
 	player.velocity = player.velocity.lerp(input_dir * 100.0, delta * a)
 	player.move_and_slide()
-	var camera_top_left := (
-		get_viewport().get_camera_2d().global_position
-		- get_viewport_rect().size / 2.0
-	)
 	player.rotation = player.global_position.angle_to_point(
-		camera_top_left + get_viewport().get_mouse_position()
+		get_global_mouse_position()
 	)
 
 
@@ -113,6 +118,7 @@ func _update_player_shooting() -> void:
 			if collision.collider is Enemy:
 				var enemy: Enemy = collision.collider
 				enemy.alive = false
+				enemy.daze_stars.visible = false
 				enemy.body.modulate = Color(0.8, 0.2, 0.2, 0.5)
 				enemy.gun.modulate = Color(0.8, 0.2, 0.2, 0.5)
 				enemy.head.modulate = Color(0.8, 0.2, 0.2, 0.5)
@@ -180,8 +186,16 @@ func _update_player_laser() -> void:
 
 
 func _update_enemy(enemy: Enemy, delta: float) -> void:
-	if not enemy.alive or not player_alive:
+	if not enemy.alive:
 		return
+	if enemy.daze_time_remaining > 0.0:
+		enemy.daze_time_remaining -= delta
+		enemy.daze_stars.visible = true
+		enemy.daze_stars.rotation += TAU * delta
+		enemy.reaction_time_remaining = enemy.reaction_time
+		return
+	else:
+		enemy.daze_stars.visible = false
 	var player_pos := enemy_see_player_ray_cast(
 		enemy.global_position, visibility_distance
 	)
@@ -218,7 +232,11 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 					laser.visible = false
 					global_light.visible = true
 					revealed_tile_map.visible = false
-					bullet.process_mode = Node.PROCESS_MODE_DISABLED
+					bullets_node.process_mode = Node.PROCESS_MODE_DISABLED
+					grenades_node.process_mode = Node.PROCESS_MODE_DISABLED
+					flashbang_lights_node.process_mode = (
+						Node.PROCESS_MODE_DISABLED
+					)
 			else:
 				bullet.end = query.to
 			bullets_node.add_child(bullet)
@@ -258,11 +276,46 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 	enemy.move_and_slide()
 
 
+func _update_flashbang_grenade(fg: FlashbangGrenade, delta: float) -> void:
+	fg.linear_velocity = fg.linear_velocity - fg.linear_velocity * 1.5 * delta
+	if Util.get_ticks_sec() - fg.created_at > fg.lifetime:
+		fg.queue_free()
+		var light: FlashbangLight = flashbang_light_scene.instantiate()
+		light.position = fg.position
+		flashbang_lights_node.add_child(light)
+		for enemy: Enemy in enemies_node.get_children():
+			var query := PhysicsRayQueryParameters2D.new()
+			query.from = fg.global_position
+			var dir := fg.global_position.direction_to(enemy.global_position)
+			query.to = query.from + dir * fg.radius
+			query.exclude = [fg]
+			var collision := (
+				get_world_2d().direct_space_state.intersect_ray(query)
+			)
+			if collision and collision.collider == enemy:
+				enemy.daze_time_remaining = enemy.daze_time
+
+
+func _update_flashbang_light(lg: FlashbangLight, delta: float) -> void:
+	lg.sprite.modulate.a -= delta / 0.2
+	if lg.sprite.modulate.a <= 0.0:
+		lg.queue_free()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("quit"):
 		get_tree().quit()
 	if event.is_action_pressed("restart"):
 		get_tree().reload_current_scene()
+	if player_alive and event.is_action_pressed("secondary"):
+		var g: FlashbangGrenade = flashbang_grenade_scene.instantiate()
+		g.add_collision_exception_with(player)
+		g.position = player.global_position
+		g.linear_velocity = (
+			4.0 * (get_global_mouse_position() - player.global_position)
+		)
+		g.angular_velocity = 6.0
+		grenades_node.add_child(g)
 
 
 func enemy_see_player_ray_cast(

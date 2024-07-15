@@ -1,9 +1,11 @@
-[gd_scene load_steps=15 format=3 uid="uid://c0rfxy6toppml"]
+[gd_scene load_steps=17 format=3 uid="uid://c0rfxy6toppml"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_temxs"]
 [ext_resource type="PackedScene" uid="uid://8b268vewh84" path="res://bullet.tscn" id="2_5pv5m"]
 [ext_resource type="PackedScene" uid="uid://bupoxmvqg6dlc" path="res://enemy.tscn" id="3_62bvi"]
+[ext_resource type="PackedScene" uid="uid://b46rf72hrbmku" path="res://flashbang_grenade.tscn" id="4_xo5y4"]
 [ext_resource type="PackedScene" uid="uid://bt2ebtn2l7vjn" path="res://person.tscn" id="5_6bfa0"]
+[ext_resource type="PackedScene" uid="uid://823nna1rcvx3" path="res://flashbang_light.tscn" id="5_44epk"]
 [ext_resource type="Texture2D" uid="uid://bfqnw64hn3m8v" path="res://light.png" id="7_ceqqv"]
 [ext_resource type="TileSet" uid="uid://p4tsbptrul4q" path="res://tile_set.tres" id="8_7qdrk"]
 [ext_resource type="Texture2D" uid="uid://y1tasqoy8alg" path="res://square.svg" id="8_ia43j"]
@@ -34,6 +36,8 @@ color = Color(0, 0, 0, 1)
 script = ExtResource("1_temxs")
 bullet_scene = ExtResource("2_5pv5m")
 enemy_scene = ExtResource("3_62bvi")
+flashbang_grenade_scene = ExtResource("4_xo5y4")
+flashbang_light_scene = ExtResource("5_44epk")
 
 [node name="DebugPoint" type="Sprite2D" parent="."]
 unique_name_in_owner = true
@@ -79,6 +83,7 @@ material = SubResource("CanvasItemMaterial_8w245")
 
 [node name="FovLight" type="PointLight2D" parent="NavigationRegion/Player"]
 unique_name_in_owner = true
+energy = 0.8
 blend_mode = 2
 range_item_cull_mask = 3
 shadow_enabled = true
@@ -104,6 +109,12 @@ zoom = Vector2(0.65, 0.65)
 process_callback = 0
 
 [node name="Bullets" type="Node2D" parent="NavigationRegion"]
+unique_name_in_owner = true
+
+[node name="Grenades" type="Node2D" parent="NavigationRegion"]
+unique_name_in_owner = true
+
+[node name="FlashbangLights" type="Node2D" parent="NavigationRegion"]
 unique_name_in_owner = true
 
 [node name="GlobalLight" type="PointLight2D" parent="."]

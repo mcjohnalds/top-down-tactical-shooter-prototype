@@ -1,3 +1,6 @@
+- Flashbangs
+  - limited quantity
+  - Pick up bangs from enemies
 - Research CQB
 - Enemy alive counter
 - Use terrain map to make walls thinner
@@ -14,7 +17,6 @@
 - Prototype teammate
 - Better proc gen
 - Automatically swish shoulders
-- Flashbangs
 - Blood
 - Particle effects
 - More textures
