@@ -1,3 +1,4 @@
+- Use terrain map to make walls thinner
 - Flashbangs
   - limited quantity
   - Pick up bangs from enemies
@@ -6,7 +7,6 @@
   - Allow zooming out and make view distance longer
 - Research CQB
 - Enemy alive counter
-- Use terrain map to make walls thinner
 - Doors
 - Supressing fire
 - Experiment with differnet enemy AIs
@@ -40,5 +40,8 @@
 - Mastery?
 - Autonomy?
 - Habit?
+- Novelty over time?
+- Meaning?
+- Vibe?
 - Move dungeon generation into godot-temple
 - Make godot-temple a loosely coupled addon

@@ -27,7 +27,6 @@ const laser_length := 100.0
 @onready var flashbang_lights_node: Node2D = %FlashbangLights
 @onready var root_2d: Node2D = %Root2D
 var player_last_fired_at := -1000.0
-var player_alive := true
 
 
 func _ready() -> void:
@@ -77,7 +76,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not player_alive:
+	if root_2d.process_mode == PROCESS_MODE_DISABLED:
 		return
 	_update_player_movement(delta)
 	_update_player_shooting()
@@ -120,16 +119,17 @@ func _update_player_shooting() -> void:
 			bullet.end = collision.position
 			if collision.collider is Enemy:
 				var enemy: Enemy = collision.collider
-				enemy.alive = false
 				enemy.daze_stars.visible = false
 				enemy.body.modulate = Color(0.8, 0.2, 0.2, 0.5)
 				enemy.gun.modulate = Color(0.8, 0.2, 0.2, 0.5)
 				enemy.head.modulate = Color(0.8, 0.2, 0.2, 0.5)
-				enemy.collision_shape.disabled = true
+				enemy.process_mode = PROCESS_MODE_DISABLED
 		else:
 			bullet.end = query.to
 		bullets_node.add_child(bullet)
 		for enemy: Enemy in enemies_node.get_children():
+			if enemy.process_mode == PROCESS_MODE_DISABLED:
+				continue
 			if enemy.state == Enemy.State.IDLE:
 				enemy.state = Enemy.State.ALERT
 			if (
@@ -193,7 +193,7 @@ func _update_player_laser() -> void:
 
 
 func _update_enemy(enemy: Enemy, delta: float) -> void:
-	if not enemy.alive:
+	if enemy.process_mode == PROCESS_MODE_DISABLED:
 		return
 	if enemy.daze_time_remaining > 0.0:
 		enemy.daze_time_remaining -= delta
@@ -231,7 +231,6 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 			if collision:
 				bullet.end = collision.position
 				if collision.collider == player:
-					player_alive = false
 					player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
 					player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
 					player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
@@ -239,11 +238,7 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 					laser.visible = false
 					global_light.visible = true
 					revealed_tile_map.visible = false
-					bullets_node.process_mode = Node.PROCESS_MODE_DISABLED
-					grenades_node.process_mode = Node.PROCESS_MODE_DISABLED
-					flashbang_lights_node.process_mode = (
-						Node.PROCESS_MODE_DISABLED
-					)
+					root_2d.process_mode = Node.PROCESS_MODE_DISABLED
 			else:
 				bullet.end = query.to
 			bullets_node.add_child(bullet)
@@ -291,6 +286,8 @@ func _update_flashbang_grenade(fg: FlashbangGrenade, delta: float) -> void:
 		light.position = fg.position
 		flashbang_lights_node.add_child(light)
 		for enemy: Enemy in enemies_node.get_children():
+			if enemy.process_mode == PROCESS_MODE_DISABLED:
+				continue
 			var query := PhysicsRayQueryParameters2D.new()
 			query.from = fg.global_position
 			var dir := fg.global_position.direction_to(enemy.global_position)
@@ -314,7 +311,10 @@ func _input(event: InputEvent) -> void:
 		get_tree().quit()
 	if event.is_action_pressed("restart"):
 		get_tree().reload_current_scene()
-	if player_alive and event.is_action_pressed("secondary"):
+	if (
+		root_2d.process_mode != PROCESS_MODE_DISABLED
+		and event.is_action_pressed("secondary")
+	):
 		var g: FlashbangGrenade = flashbang_grenade_scene.instantiate()
 		g.add_collision_exception_with(player)
 		g.position = player.global_position
