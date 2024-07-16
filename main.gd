@@ -147,9 +147,9 @@ func _update_player_tile_reveal() -> void:
 			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
 		)
 		var point: Vector2 = (
-			collision.position
-				if collision and collision.collider == unrevealed_tile_map
-				else query.to
+			collision.position if 
+				collision and collision.collider == unrevealed_tile_map
+			else query.to
 		)
 		var line_samples := 100
 		for j in line_samples:
@@ -169,30 +169,30 @@ func _update_player_tile_reveal() -> void:
 
 
 func _update_player_laser() -> void:
-		var query = PhysicsRayQueryParameters2D.new()
-		query.from = player.global_position
-		query.to = (
-			player.global_position
-			+ player.global_transform.x * visibility_distance
-		)
-		var collision = (
-			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
-		)
-		if collision:
-			laser.scale.x = collision.position.distance_to(query.from) / 100.0
-		else:
-			laser.scale.x = visibility_distance / 100.0
+	var query = PhysicsRayQueryParameters2D.new()
+	query.from = player.global_position
+	query.to = (
+		player.global_position
+		+ player.global_transform.x * visibility_distance
+	)
+	var collision = (
+		root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+	)
+	if collision:
+		laser.scale.x = collision.position.distance_to(query.from) / 100.0
+	else:
+		laser.scale.x = visibility_distance / 100.0
 
 
 func _update_enemy(enemy: Enemy, delta: float) -> void:
 	if enemy.process_mode == PROCESS_MODE_DISABLED:
 		return
 
+	# Daze time coundown
 	if enemy.daze_time_remaining > 0.0:
 		enemy.daze_time_remaining -= delta
 		enemy.daze_stars.visible = true
 		enemy.daze_stars.rotation += TAU * delta
-		enemy.reaction_time_remaining = enemy.reaction_time
 		return
 	else:
 		enemy.daze_stars.visible = false
@@ -200,30 +200,41 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 	var seen_player_pos := enemy_see_player_ray_cast(
 		enemy.global_position, visibility_distance
 	)
+
+	# Reaction time countdown
 	if seen_player_pos:
 		enemy.reaction_time_remaining -= delta
-		enemy.rotation = enemy.global_position.angle_to_point(seen_player_pos)
-		var time := Util.get_ticks_sec()
-		if (
-			time - enemy.last_fired_at > fire_rate
-			and enemy.reaction_time_remaining <= 0.0
-		):
-			enemy.last_fired_at = time
-			var hit := fire_bullet(enemy, seen_player_pos)
-			if hit == player:
-				player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
-				player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
-				player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
-				fov_light.visible = false
-				laser.visible = false
-				global_light.visible = true
-				revealed_tile_map.visible = false
-				root_2d.process_mode = Node.PROCESS_MODE_DISABLED
-				return
 	else:
 		enemy.reaction_time_remaining += enemy.reaction_time
-		if enemy.reaction_time_remaining >= enemy.reaction_time:
-			enemy.reaction_time_remaining = enemy.reaction_time
+	enemy.reaction_time_remaining = clampf(
+		enemy.reaction_time_remaining, 0.0, enemy.reaction_time
+	)
+
+	# Rotation
+	if seen_player_pos:
+		enemy.rotation = enemy.global_position.angle_to_point(seen_player_pos)
+
+	# Shooting
+	var time := Util.get_ticks_sec()
+	if (
+		seen_player_pos
+		and time - enemy.last_fired_at > fire_rate
+		and enemy.reaction_time_remaining == 0.0
+	):
+		enemy.last_fired_at = time
+		var hit := fire_bullet(enemy, seen_player_pos)
+		if hit == player:
+			player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
+			player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
+			player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
+			fov_light.visible = false
+			laser.visible = false
+			global_light.visible = true
+			revealed_tile_map.visible = false
+			root_2d.process_mode = Node.PROCESS_MODE_DISABLED
+			return
+
+	# AI state machine
 	var target_velocity := Vector2.ZERO
 	match enemy.state:
 		Enemy.State.IDLE:
@@ -250,6 +261,8 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 			if enemy.navigation_agent.is_navigation_finished():
 				enemy.state = Enemy.State.ALERT
 				enemy.wait_between_move_time_remaining = randf_range(1.0, 10.0)
+
+	# Physics
 	var accel := 1.0 if target_velocity else 6.0
 	enemy.velocity = enemy.velocity.lerp(target_velocity, delta * accel)
 	enemy.move_and_slide()
@@ -275,6 +288,7 @@ func _update_flashbang_grenade(fg: FlashbangGrenade, delta: float) -> void:
 			)
 			if collision and collision.collider == enemy:
 				enemy.daze_time_remaining = enemy.daze_time
+				enemy.reaction_time_remaining = enemy.reaction_time
 
 
 func _update_flashbang_light(lg: FlashbangLight, delta: float) -> void:
