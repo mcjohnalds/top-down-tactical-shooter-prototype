@@ -16,5 +16,5 @@ var last_fired_at := -1000.0
 var alive := true
 var state := State.IDLE
 var reaction_time_remaining := reaction_time
-var wait_between_move_time_remaining: float
+var wait_between_move_time_remaining := 0.0
 var daze_time_remaining := -1.0

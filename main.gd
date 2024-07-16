@@ -27,6 +27,7 @@ const laser_length := 100.0
 @onready var flashbang_lights_node: Node2D = %FlashbangLights
 @onready var root_2d: Node2D = %Root2D
 var player_last_fired_at := -1000.0
+var player_has_been_detected := false
 
 
 func _ready() -> void:
@@ -132,8 +133,8 @@ func _update_player_shooting() -> void:
 		for enemy: Enemy in enemies_node.get_children():
 			if enemy.process_mode == PROCESS_MODE_DISABLED:
 				continue
-			if enemy.state == Enemy.State.IDLE:
-				enemy.state = Enemy.State.ALERT
+			player_has_been_detected = true
+			# TODO: 0.2 may be too small
 			if (
 				enemy.reaction_time_remaining > 0.2
 				and not enemy_see_player_ray_cast(
@@ -197,6 +198,7 @@ func _update_player_laser() -> void:
 func _update_enemy(enemy: Enemy, delta: float) -> void:
 	if enemy.process_mode == PROCESS_MODE_DISABLED:
 		return
+
 	if enemy.daze_time_remaining > 0.0:
 		enemy.daze_time_remaining -= delta
 		enemy.daze_stars.visible = true
@@ -205,26 +207,22 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 		return
 	else:
 		enemy.daze_stars.visible = false
-	var player_pos := enemy_see_player_ray_cast(
+
+	var seen_player_pos := enemy_see_player_ray_cast(
 		enemy.global_position, visibility_distance
 	)
-	if player_pos:
-		if enemy.state == Enemy.State.IDLE:
-			for enemy2: Enemy in enemies_node.get_children():
-				enemy2.state = Enemy.State.ALERT
+	if seen_player_pos:
 		enemy.reaction_time_remaining -= delta
-		if enemy.reaction_time_remaining <= 0.0:
-			enemy.reaction_time_remaining = 0.0
-		enemy.rotation = enemy.global_position.angle_to_point(player_pos)
+		enemy.rotation = enemy.global_position.angle_to_point(seen_player_pos)
 		var time := Util.get_ticks_sec()
 		if (
 			time - enemy.last_fired_at > fire_rate
-			and enemy.reaction_time_remaining == 0.0
+			and enemy.reaction_time_remaining <= 0.0
 		):
 			enemy.last_fired_at = time
 			var query = PhysicsRayQueryParameters2D.new()
 			query.from = enemy.global_position
-			query.to = player_pos
+			query.to = seen_player_pos
 			var collision = (
 				root_2d.get_world_2d().direct_space_state.intersect_ray(query)
 			)
@@ -232,50 +230,49 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 			bullet.start = query.from
 			if collision:
 				bullet.end = collision.position
-				if collision.collider == player:
-					player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
-					player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
-					player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
-					fov_light.visible = false
-					laser.visible = false
-					global_light.visible = true
-					revealed_tile_map.visible = false
-					root_2d.process_mode = Node.PROCESS_MODE_DISABLED
-					return
 			else:
 				bullet.end = query.to
 			bullets_node.add_child(bullet)
+			if collision and collision.collider == player:
+				player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
+				player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
+				player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
+				fov_light.visible = false
+				laser.visible = false
+				global_light.visible = true
+				revealed_tile_map.visible = false
+				root_2d.process_mode = Node.PROCESS_MODE_DISABLED
+				return
 	else:
 		enemy.reaction_time_remaining += enemy.reaction_time
 		if enemy.reaction_time_remaining >= enemy.reaction_time:
 			enemy.reaction_time_remaining = enemy.reaction_time
-	if (
-		enemy.state == Enemy.State.MOVING
-		and enemy.navigation_agent.is_navigation_finished()
-	):
-		enemy.state = Enemy.State.ALERT
-		enemy.wait_between_move_time_remaining = randf_range(1.0, 10.0)
-	if enemy.state == Enemy.State.ALERT:
-		enemy.wait_between_move_time_remaining -= delta
-		if enemy.wait_between_move_time_remaining <= 0.0:
-			enemy.wait_between_move_time_remaining = 0.0
-			enemy.state = Enemy.State.MOVING
-			var angle := TAU * randf()
-			var distance := randf_range(20.0, 50.0)
-			var random_pos := (
-				enemy.initial_position
-				+ Vector2.from_angle(angle) * distance
-			)
-			enemy.navigation_agent.target_position = random_pos
 	var target_velocity := Vector2.ZERO
-	if enemy.state == Enemy.State.MOVING:
-		var next := enemy.navigation_agent.get_next_path_position()
-		target_velocity = enemy.position.direction_to(next) * 80.0
-		enemy.debug_arrow.start.global_position = enemy.global_position
-		enemy.debug_arrow.end.global_position = next
-		# enemy.debug_arrow.visible = true
-	else:
-		enemy.debug_arrow.visible = false
+	match enemy.state:
+		Enemy.State.IDLE:
+			if seen_player_pos:
+				player_has_been_detected = true
+			if player_has_been_detected:
+				enemy.state = Enemy.State.ALERT
+		Enemy.State.ALERT:
+			enemy.wait_between_move_time_remaining -= delta
+			if enemy.wait_between_move_time_remaining <= 0.0:
+				enemy.state = Enemy.State.MOVING
+				var angle := TAU * randf()
+				var distance := randf_range(20.0, 50.0)
+				var random_pos := (
+					enemy.initial_position
+					+ Vector2.from_angle(angle) * distance
+				)
+				enemy.navigation_agent.target_position = random_pos
+		Enemy.State.MOVING:
+			var next := enemy.navigation_agent.get_next_path_position()
+			target_velocity = enemy.position.direction_to(next) * 80.0
+			enemy.debug_arrow.start.global_position = enemy.global_position
+			enemy.debug_arrow.end.global_position = next
+			if enemy.navigation_agent.is_navigation_finished():
+				enemy.state = Enemy.State.ALERT
+				enemy.wait_between_move_time_remaining = randf_range(1.0, 10.0)
 	var accel := 1.0 if target_velocity else 6.0
 	enemy.velocity = enemy.velocity.lerp(target_velocity, delta * accel)
 	enemy.move_and_slide()
