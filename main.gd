@@ -84,6 +84,8 @@ func _physics_process(delta: float) -> void:
 	_update_player_laser()
 	for enemy: Enemy in enemies_node.get_children():
 		_update_enemy(enemy, delta)
+		if root_2d.process_mode == PROCESS_MODE_DISABLED:
+			return
 	for g: FlashbangGrenade in grenades_node.get_children():
 		_update_flashbang_grenade(g, delta)
 	for fl: FlashbangLight in flashbang_lights_node.get_children():
@@ -239,6 +241,7 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 					global_light.visible = true
 					revealed_tile_map.visible = false
 					root_2d.process_mode = Node.PROCESS_MODE_DISABLED
+					return
 			else:
 				bullet.end = query.to
 			bullets_node.add_child(bullet)
