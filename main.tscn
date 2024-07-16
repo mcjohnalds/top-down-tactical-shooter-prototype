@@ -105,6 +105,9 @@ light_mask = 2
 tile_set = ExtResource("8_7qdrk")
 format = 2
 
+[node name="Bullets" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
+unique_name_in_owner = true
+
 [node name="Enemies" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true
 
@@ -150,9 +153,6 @@ disabled = true
 [node name="Camera2D" type="Camera2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion/Player"]
 zoom = Vector2(0.65, 0.65)
 process_callback = 0
-
-[node name="Bullets" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
-unique_name_in_owner = true
 
 [node name="Grenades" type="Node2D" parent="SubViewportContainer/SubViewport/Root2D/NavigationRegion"]
 unique_name_in_owner = true

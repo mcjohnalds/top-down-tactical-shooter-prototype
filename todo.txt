@@ -1,3 +1,4 @@
+- Make flashbang rays penetrate through enemies and player
 - Use terrain map to make walls thinner
 - Flashbangs
   - limited quantity

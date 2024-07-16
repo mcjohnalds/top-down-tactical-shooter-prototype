@@ -1,7 +1,7 @@
 extends CharacterBody2D
 class_name Enemy
 
-enum State { IDLE, ALERT, MOVING }
+enum State { IDLE, ALERT, MOVING, DAZED, DEAD }
 const reaction_time := 0.8
 const daze_time := 3.0
 @onready var body: Sprite2D = $Body
@@ -18,3 +18,6 @@ var state := State.IDLE
 var reaction_time_remaining := reaction_time
 var wait_between_move_time_remaining := 0.0
 var daze_time_remaining := -1.0
+var can_see_player := false
+var see_player_position := Vector2.ZERO
+var target_velocity := Vector2.ZERO
