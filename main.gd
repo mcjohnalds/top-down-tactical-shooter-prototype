@@ -110,26 +110,15 @@ func _update_player_shooting() -> void:
 		and time - player_last_fired_at > fire_rate
 	):
 		player_last_fired_at = time
-		var query = PhysicsRayQueryParameters2D.new()
-		query.from = player.global_position
-		query.to = player.global_position + player.global_transform.x * 1000.0
-		var collision = (
-			root_2d.get_world_2d().direct_space_state.intersect_ray(query)
-		)
-		var bullet := bullet_scene.instantiate()
-		bullet.start = query.from
-		if collision:
-			bullet.end = collision.position
-			if collision.collider is Enemy:
-				var enemy: Enemy = collision.collider
-				enemy.daze_stars.visible = false
-				enemy.body.modulate = Color(0.8, 0.2, 0.2, 0.5)
-				enemy.gun.modulate = Color(0.8, 0.2, 0.2, 0.5)
-				enemy.head.modulate = Color(0.8, 0.2, 0.2, 0.5)
-				enemy.process_mode = PROCESS_MODE_DISABLED
-		else:
-			bullet.end = query.to
-		bullets_node.add_child(bullet)
+		# TODO: specify bullet direction to be mouse
+		var hit := fire_bullet(player, root_2d.get_global_mouse_position())
+		if hit is Enemy:
+			var enemy: Enemy = hit
+			enemy.daze_stars.visible = false
+			enemy.body.modulate = Color(0.8, 0.2, 0.2, 0.5)
+			enemy.gun.modulate = Color(0.8, 0.2, 0.2, 0.5)
+			enemy.head.modulate = Color(0.8, 0.2, 0.2, 0.5)
+			enemy.process_mode = PROCESS_MODE_DISABLED
 		for enemy: Enemy in enemies_node.get_children():
 			if enemy.process_mode == PROCESS_MODE_DISABLED:
 				continue
@@ -220,20 +209,8 @@ func _update_enemy(enemy: Enemy, delta: float) -> void:
 			and enemy.reaction_time_remaining <= 0.0
 		):
 			enemy.last_fired_at = time
-			var query = PhysicsRayQueryParameters2D.new()
-			query.from = enemy.global_position
-			query.to = seen_player_pos
-			var collision = (
-				root_2d.get_world_2d().direct_space_state.intersect_ray(query)
-			)
-			var bullet := bullet_scene.instantiate()
-			bullet.start = query.from
-			if collision:
-				bullet.end = collision.position
-			else:
-				bullet.end = query.to
-			bullets_node.add_child(bullet)
-			if collision and collision.collider == player:
+			var hit := fire_bullet(enemy, seen_player_pos)
+			if hit == player:
 				player_body.modulate = Color(0.0, 0.0, 0.8, 0.9)
 				player_gun.modulate = Color(0.0, 0.0, 0.8, 0.9)
 				player_head.modulate = Color(0.0, 0.0, 0.8, 0.9)
@@ -315,6 +292,7 @@ func _input(event: InputEvent) -> void:
 		root_2d.process_mode != PROCESS_MODE_DISABLED
 		and event.is_action_pressed("secondary")
 	):
+		player_has_been_detected = true
 		var g: FlashbangGrenade = flashbang_grenade_scene.instantiate()
 		g.add_collision_exception_with(player)
 		g.position = player.global_position
@@ -353,3 +331,22 @@ func enemy_see_player_ray_cast(
 		var pos_avg := pos_sum / see_player_positions.size()
 		return pos_avg
 	return Vector2.ZERO
+
+
+func fire_bullet(shooter: PhysicsBody2D, target: Vector2) -> Node2D:
+	var query = PhysicsRayQueryParameters2D.new()
+	query.from = shooter.global_position
+	var dir := target - shooter.global_position
+	query.to = shooter.global_position + dir * 1000.0
+	query.exclude = [shooter]
+	var collision := (
+		root_2d.get_world_2d().direct_space_state.intersect_ray(query)
+	)
+	var bullet: Bullet = bullet_scene.instantiate()
+	bullet.start = query.from
+	if collision:
+		bullet.end = collision.position
+	else:
+		bullet.end = query.to
+	bullets_node.add_child(bullet)
+	return collision.collider if collision else null
